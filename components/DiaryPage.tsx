@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Plus, X, ListTodo, UtensilsCrossed, BookOpen, Calendar, Clock } from 'lucide-react';
+import { Plus, X, ListTodo, UtensilsCrossed, BookOpen, Calendar, Clock, RotateCcw } from 'lucide-react';
 import TodoItem from './TodoItem';
 import PriorityItem from './PriorityItem';
 import StickyNote from './StickyNote';
@@ -63,12 +63,23 @@ export default function DiaryPage({ date, data, updateData }: DiaryPageProps) {
   const [showTodoInput, setShowTodoInput] = useState(false);
   const [showFoodInput, setShowFoodInput] = useState(false);
   const [showScheduleInput, setShowScheduleInput] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [newTodo, setNewTodo] = useState('');
   const [newFood, setNewFood] = useState('');
   const [newSchedule, setNewSchedule] = useState('');
   const [newScheduleTime, setNewScheduleTime] = useState('');
 
   const monthTheme = getMonthlyTheme(date.getMonth());
+
+  const resetPage = () => {
+    updateData({
+      todos: [],
+      priorities: [],
+      schedule: [],
+      notes: []
+    });
+    setShowResetConfirm(false);
+  };
 
   const addTodo = () => {
     if (!newTodo.trim()) return;
@@ -215,21 +226,58 @@ export default function DiaryPage({ date, data, updateData }: DiaryPageProps) {
       {/* Page lines */}
       <div className="absolute left-8 top-16 bottom-4 w-px bg-red-300 opacity-30"></div>
       
-      {/* Date and Study Button */}
+      {/* Date and Action Buttons */}
       <div className="relative z-10 mb-4 flex justify-between items-start">
         <div className={`bg-gradient-to-r ${monthTheme.accent} text-white px-3 py-1 rounded-lg shadow-md`}>
           <div className="text-xs font-medium">{format(date, 'EEEE')}</div>
           <div className="text-lg font-bold">{format(date, 'MMM dd, yyyy')}</div>
         </div>
         
-        <button
-          onClick={addStickyNote}
-          className="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium shadow-md transition-all hover:scale-105 text-sm flex items-center gap-2"
-        >
-          <BookOpen className="w-4 h-4" />
-          Study
-        </button>
+        <div className="flex flex-col gap-2">
+          <button
+            onClick={() => setShowResetConfirm(true)}
+            className="px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium shadow-md transition-all hover:scale-105 text-sm flex items-center gap-2"
+            title="Reset page"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Reset
+          </button>
+          
+          <button
+            onClick={addStickyNote}
+            className="px-3 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium shadow-md transition-all hover:scale-105 text-sm flex items-center gap-2"
+          >
+            <BookOpen className="w-4 h-4" />
+            Study
+          </button>
+        </div>
       </div>
+
+      {/* Reset Confirmation Modal */}
+      {showResetConfirm && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50 rounded-xl">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm mx-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-3">Reset Page</h3>
+            <p className="text-gray-600 mb-4">
+              Are you sure you want to clear all content on this page? This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={resetPage}
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+              >
+                Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Content Container */}
       <div className="relative z-10 h-full overflow-y-auto custom-scrollbar">
